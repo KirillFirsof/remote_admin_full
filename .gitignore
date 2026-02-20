@@ -1,0 +1,36 @@
+# Java
+*.class
+target/
+*.log
+*.jar
+*.war
+*.ear
+
+# IDE
+.idea/
+*.iml
+.vscode/
+.settings/
+.classpath
+.project
+
+# Node
+node_modules/
+dist/
+build/
+*.lock
+
+# Maven
+log/
+pom.xml.tag
+pom.xml.releaseBackup
+pom.xml.versionsBackup
+pom.xml.next
+release.properties
+.mvn/
+
+# React
+frontend/node_modules/
+frontend/dist/
+frontend/build/
+frontend/.env
