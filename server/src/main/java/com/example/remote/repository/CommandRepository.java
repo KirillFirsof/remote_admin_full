@@ -9,4 +9,5 @@ import com.example.remote.entity.Command;
 public interface CommandRepository extends JpaRepository<Command, Long> {
     List<Command> findByComputerIdAndStatus(Long computerId, String status);
     List<Command> findByStatus(String status);
+    List<Command> findByComputerIdOrderByCreatedAtDesc(Long computerId);
 }
