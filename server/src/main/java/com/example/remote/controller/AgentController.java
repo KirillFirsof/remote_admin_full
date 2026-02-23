@@ -33,7 +33,7 @@ public class AgentController {
 
     @PostMapping("/agent/register")
     @Operation(summary = "Регистрация нового агента", 
-               description = "Агент отправляет имя при первом запуске, сервер возвращает UUID")
+               description = "Агент отправляет  имя при первом запуске, сервер возвращает UUID")
     public String registerAgent(@RequestBody Computer computer) {
         computer.setLastSeen(LocalDateTime.now());
         Computer saved = computerRepository.save(computer);
