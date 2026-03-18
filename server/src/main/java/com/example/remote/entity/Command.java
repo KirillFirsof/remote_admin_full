@@ -2,6 +2,7 @@ package com.example.remote.entity;
 
 import java.time.LocalDateTime;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -23,8 +24,11 @@ public class Command {
     @JoinColumn(name = "computer_id")
     private Computer computer;
     
+    @Column(columnDefinition = "TEXT")
     private String commandText;
     private String status; // PENDING, COMPLETED, ERROR
+
+    @Column(columnDefinition = "TEXT")
     private String result;
     private LocalDateTime createdAt;
 }
