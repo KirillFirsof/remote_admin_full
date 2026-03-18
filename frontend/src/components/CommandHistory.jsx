@@ -1,22 +1,14 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
+import { getCommandHistory } from '../services/api';
 
 const CommandHistory = ({ computerId }) => {
   const [commands, setCommands] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedCommand, setSelectedCommand] = useState(null);
 
-  useEffect(() => {
-    fetchCommands();
-    const interval = setInterval(fetchCommands, 3000);
-    return () => clearInterval(interval);
-  }, [computerId]);
-
   const fetchCommands = async () => {
     try {
-      // TODO: Добавить эндпоинт на бэкенде для получения команд по computerId
-      // Пока заглушка
-      const response = await axios.get(`http://localhost:8080/api/commands?computerId=${computerId}`);
+      const response = await getCommandHistory(computerId);
       setCommands(response.data);
     } catch (error) {
       console.error('Ошибка загрузки команд:', error);
@@ -24,6 +16,12 @@ const CommandHistory = ({ computerId }) => {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    fetchCommands();
+    const interval = setInterval(fetchCommands, 5000);
+    return () => clearInterval(interval);
+  }, [computerId]);
 
   const getStatusBadge = (status) => {
     const colors = {
@@ -86,7 +84,6 @@ const CommandHistory = ({ computerId }) => {
         </div>
       )}
 
-      {/* Модальное окно с результатом */}
       {selectedCommand && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4">
           <div className="bg-white rounded-lg max-w-2xl w-full max-h-[80vh] flex flex-col">

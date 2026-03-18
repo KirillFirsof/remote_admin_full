@@ -72,4 +72,25 @@ public class ApiClient {
             throw new RuntimeException("Ошибка heartbeat: " + response.statusCode());
         }
     }
+
+    public void sendCommandResult(Long commandId, String result) throws Exception {
+        ObjectMapper mapper = new ObjectMapper();
+        ObjectNode requestBody = mapper.createObjectNode();
+        requestBody.put("result", result);
+
+        HttpRequest request = HttpRequest.newBuilder()
+                .uri(URI.create(SERVER_URL + "/commands/" + commandId + "/result"))
+                .header("Content-Type", "application/json")
+                .POST(HttpRequest.BodyPublishers.ofString(requestBody.toString()))
+                .timeout(Duration.ofSeconds(5))
+                .build();
+
+        HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+
+        if (response.statusCode() == 200) {
+            System.out.println("Результат команды " + commandId + " отправлен");
+        } else {
+            System.err.println("Ошибка отправки результата: " + response.statusCode());
+        }
+    }
 }
