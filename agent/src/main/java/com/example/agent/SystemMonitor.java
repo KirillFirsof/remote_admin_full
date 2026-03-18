@@ -21,17 +21,26 @@ public class SystemMonitor {
         return os.getNetworkParams().getHostName();
     }
 
+    private double lastCpuLoad = 0.0;
+
     public double getCpuLoad() {
         CentralProcessor processor = hardware.getProcessor();
-        // Первый вызов может быть неточным, поэтому делаем два замера
-        long[] prevTicks = processor.getSystemCpuLoadTicks();
-        try {
-            Thread.sleep(100);
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
+        
+        // Получаем нагрузку за последнюю секунду
+        double load = processor.getSystemCpuLoad(1000) * 100;
+        
+        // Если нагрузка 0.0 или отрицательная, пробуем другой метод
+        if (load <= 0.0) {
+            load = processor.getSystemLoadAverage(1)[0] * 100;
         }
-        double load = processor.getSystemCpuLoadBetweenTicks(prevTicks) * 100;
-        return Math.round(load * 10) / 10.0; // округляем до 1 знака
+        
+        // Если все еще 0, берем последнее известное значение
+        if (load <= 0.0 && lastCpuLoad > 0) {
+            return lastCpuLoad;
+        }
+        
+        lastCpuLoad = Math.round(load * 10) / 10.0;
+        return lastCpuLoad;
     }
 
     public int getFreeRamMb() {

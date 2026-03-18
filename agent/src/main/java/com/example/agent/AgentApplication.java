@@ -6,10 +6,10 @@ import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.time.Duration;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
-import java.time.Duration; 
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -77,6 +77,10 @@ public class AgentApplication {
 
     private static void checkAndExecuteCommands(Long agentId, ApiClient apiClient) {
         try {
+
+            System.out.println("Проверяю команды для agentId: " + agentId);
+            System.out.println("URL запроса: " + SERVER_URL + "/commands/pending?agentId=" + agentId);
+
             // 1. Запрос к серверу: есть ли команды для этого агента?
             HttpClient client = HttpClient.newHttpClient();
             HttpRequest request = HttpRequest.newBuilder()
@@ -86,6 +90,9 @@ public class AgentApplication {
                     .build();
 
             HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+            
+            System.out.println("Статус ответа: " + response.statusCode());
+            System.out.println("Тело ответа: " + response.body());
 
             if (response.statusCode() == 200) {
                 ObjectMapper mapper = new ObjectMapper();
@@ -117,17 +124,28 @@ public class AgentApplication {
     private static String executeCommand(String command) {
         StringBuilder output = new StringBuilder();
         try {
-            Process process = Runtime.getRuntime().exec(command);
+            // Для Windows: запускаем через cmd /c
+            String[] cmdArray;
+            if (System.getProperty("os.name").toLowerCase().contains("windows")) {
+                cmdArray = new String[]{"cmd", "/c", command};
+            } else {
+                // Для Linux/Mac
+                cmdArray = new String[]{"/bin/sh", "-c", command};
+            }
+            
+            Process process = Runtime.getRuntime().exec(cmdArray);
 
-            // Чтение стандартного вывода
-            BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
+            // Чтение стандартного вывода (с правильной кодировкой для Windows)
+            BufferedReader reader = new BufferedReader(
+                new InputStreamReader(process.getInputStream(), "CP866"));
             String line;
             while ((line = reader.readLine()) != null) {
                 output.append(line).append("\n");
             }
 
             // Чтение потока ошибок
-            BufferedReader errorReader = new BufferedReader(new InputStreamReader(process.getErrorStream()));
+            BufferedReader errorReader = new BufferedReader(
+                new InputStreamReader(process.getErrorStream(), "CP866"));
             while ((line = errorReader.readLine()) != null) {
                 output.append("ERROR: ").append(line).append("\n");
             }
