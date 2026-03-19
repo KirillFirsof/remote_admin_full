@@ -3,6 +3,7 @@ import { getComputers } from './services/api';
 import ComputersList from './components/ComputersList';
 import { BrowserRouter, Routes, Route, Link } from 'react-router-dom';
 import ComputerDetails from './components/ComputerDetails';
+import CommandsPage from './components/CommandsPage';
 
 function App() {
   const [computers, setComputers] = useState([]);
@@ -42,6 +43,7 @@ function App() {
           <Routes>
             <Route path="/" element={<ComputersList />} />
             <Route path="/computers/:id" element={<ComputerDetails />} />
+            <Route path="/computers/:id/commands" element={<CommandsPage />} />
           </Routes>
         </main>
       </div>
