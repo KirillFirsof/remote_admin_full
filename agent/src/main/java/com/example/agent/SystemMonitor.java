@@ -10,6 +10,8 @@ public class SystemMonitor {
     private final SystemInfo systemInfo;
     private final HardwareAbstractionLayer hardware;
     private final OperatingSystem os;
+    private long[] prevTicks = null;
+    private double lastCpuLoad = 0.0;
 
     public SystemMonitor() {
         this.systemInfo = new SystemInfo();
@@ -21,24 +23,26 @@ public class SystemMonitor {
         return os.getNetworkParams().getHostName();
     }
 
-    private double lastCpuLoad = 0.0;
 
     public double getCpuLoad() {
         CentralProcessor processor = hardware.getProcessor();
-        
-        // Получаем нагрузку за последнюю секунду
-        double load = processor.getSystemCpuLoad(1000) * 100;
-        
-        // Если нагрузка 0.0 или отрицательная, пробуем другой метод
-        if (load <= 0.0) {
-            load = processor.getSystemLoadAverage(1)[0] * 100;
+
+        // Первый вызов — инициализация
+        if (prevTicks == null) {
+            prevTicks = processor.getSystemCpuLoadTicks();
+            try {
+                Thread.sleep(50); // Небольшая пауза для первого замера
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+            }
+            return 0.0;
         }
-        
-        // Если все еще 0, берем последнее известное значение
-        if (load <= 0.0 && lastCpuLoad > 0) {
-            return lastCpuLoad;
-        }
-        
+
+        long[] currentTicks = processor.getSystemCpuLoadTicks();
+        double load = processor.getSystemCpuLoadBetweenTicks(prevTicks) * 100;
+        prevTicks = currentTicks;
+
+        if (load < 0) load = 0;
         lastCpuLoad = Math.round(load * 10) / 10.0;
         return lastCpuLoad;
     }
